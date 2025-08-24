@@ -1,1 +1,1 @@
-## Estudo de Docker e Kubernets
+## Estudo de Docker e Kubernetes
