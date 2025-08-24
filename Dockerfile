@@ -16,7 +16,4 @@ USER app
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
-
-EXPOSE 8080
-
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "80", "--log-level", "warning"]
