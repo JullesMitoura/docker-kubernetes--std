@@ -1,31 +1,50 @@
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from src.llm_call import llm_call
+import uvicorn
 
-def main():
-    print("LLM Chat - Digite 'quit' para sair\n")
-    
-    while True:
-        try:
-            # Receber input do usuário
-            user_input = input("Você: ").strip()
-            
-            # Verificar se quer sair
-            if user_input.lower() in ['quit', 'exit', 'sair']:
-                print("Tchau! 👋")
-                break
-            
-            # Pular inputs vazios
-            if not user_input:
-                continue
-            
-            # Chamar o LLM
-            response = llm_call(user_input)
-            print(f"LLM: {response}\n")
-            
-        except KeyboardInterrupt:
-            print("\n\nTchau! 👋")
-            break
-        except Exception as e:
-            print(f"Erro: {e}\n")
+app = FastAPI(
+    title="LLM Chat API",
+    description="API para chat com LLM",
+    version="1.0.0"
+)
+
+class ChatRequest(BaseModel):
+    message: str
+
+class ChatResponse(BaseModel):
+    response: str
+
+# Health check endpoint
+@app.get("/")
+async def root():
+    return {"message": "LLM Chat API está funcionando! 🚀"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+# Endpoint principal do chat
+@app.post("/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest):
+    try:
+        # Validar input
+        if not request.message.strip():
+            raise HTTPException(status_code=400, detail="Mensagem não pode estar vazia")
+        
+        # Chamar LLM
+        llm_response = llm_call(request.message.strip())
+        
+        return ChatResponse(response=llm_response)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8080,
+        reload=True
+    )
